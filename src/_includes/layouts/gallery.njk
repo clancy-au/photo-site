@@ -1,0 +1,27 @@
+---
+layout: layouts/base.njk
+---
+{% set slug = (page.fileSlug or page.url | replace('/galleries/','') | replace('/','')) %}
+{% set gallery = galleryImages[slug] or images %}
+<article class="gallery">
+  <header>
+    <h1>{{ title }}</h1>
+    {% if description %}<p class="lede">{{ description }}</p>{% endif %}
+  </header>
+  {% if gallery and gallery.length %}
+    <ul class="gallery-grid">
+      {% for img in gallery %}
+        <li>
+          <a href="{{ img.url }}">
+            <figure>
+              <img src="{{ img.thumb or img.url }}" alt="{{ img.alt or '' }}">
+              {% if img.caption %}<figcaption>{{ img.caption }}</figcaption>{% endif %}
+            </figure>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No images yet. Add images to <code>src/galleries/images/{{ slug }}</code> to populate the gallery.</p>
+  {% endif %}
+</article>

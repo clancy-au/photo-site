@@ -1,0 +1,27 @@
+[
+  {
+    "slug": "australian-landscapes",
+    "title": "Australian Landscapes",
+    "description": "Mountains, forests, and the vast Australian outdoors."
+  },
+  {
+    "slug": "wildlife",
+    "title": "Wildlife",
+    "description": "Native wildlife and encounters in the wild."
+  },
+  {
+    "slug": "seascapes-sunsets",
+  "title": "Seascapes",
+    "description": "Shores, waves, and golden hours across the coast."
+  },
+  {
+    "slug": "travel",
+  "title": "Travel",
+    "description": "Stories and scenes from travels abroad."
+  },
+  {
+    "slug": "aurora",
+    "title": "Aurora",
+    "description": "Australian Aurora Australis moments."
+  }
+]

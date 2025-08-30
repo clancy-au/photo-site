@@ -1,0 +1,55 @@
+---
+layout: layouts/base.njk
+title: Home
+heroImages:
+ - DSC00233-Pano-Edit-Aurora-Australis-Mornington-Peninsula.jpg
+ - DSC00338-sunset-rocks-sea-Frankston-Australia.jpg
+ - DSC00697-sunset-rocks-sea-Mornington-Peninsula.jpg
+ - DSC01557-Vietnam-Fishing-Net.jpg
+ - DSC01704-Vietname-sunrise-fishing-boats.jpg
+ - DSC08132-Overland-Track-tree-seat-photography.jpg
+ - DSC08246-overland-track-sunrise-flower-web-golden-photography.jpg
+ - DSC08287-Koala-Victoria-Australia.jpg
+ - DSC08352-Overland-track-lake-mountain.jpg
+ - DSCF2509-HDR-Grampians-Sunset-Rocks-Mountains.jpg
+ - DSCF2705-topaz-denoiseraw-sharpen-sunrise-rails-pier-Flinders-Mornington-Peninsula.jpg
+ - DSCF3072-Sydney-Harbour-Opera-House-Long-Exposure.jpg
+ - DSCF3490-Queensland-beach.jpg
+ - IMG_7630-Grampians-Sunset-Bushes-Golden.jpg
+---
+{% include "partials/hero.njk" %}
+
+<section class="intro" aria-label="Introduction">
+	<p>{{ site.tagline }}</p>
+	<p>Browse featured galleries below. Each gallery will grow over time.</p>
+	<hr>
+</section>
+
+<section class="featured" aria-label="Featured galleries">
+	<ul class="card-grid">
+		<li>
+			<a href="/galleries/australian-landscapes/">
+				<figure>
+					<img src="/images/hero/IMG_7630-Grampians-Sunset-Bushes-Golden.jpg" alt="Australian Landscapes">
+					<figcaption>Australian Landscapes</figcaption>
+				</figure>
+			</a>
+		</li>
+		<li>
+			<a href="/galleries/seascapes-sunsets/">
+				<figure>
+					<img src="/images/hero/DSCF2705-topaz-denoiseraw-sharpen-sunrise-rails-pier-Flinders-Mornington-Peninsula.jpg" alt="Seascapes">
+					<figcaption>Seascapes</figcaption>
+				</figure>
+			</a>
+		</li>
+		<li>
+			<a href="/galleries/travel/">
+				<figure>
+					<img src="/images/hero/DSC01557-Vietnam-Fishing-Net.jpg" alt="Travel">
+					<figcaption>Travel</figcaption>
+				</figure>
+			</a>
+		</li>
+	</ul>
+</section>

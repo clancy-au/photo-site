@@ -1,0 +1,16 @@
+<section class="hero">
+  <div class="hero-aspect">
+    <div class="hero-track">
+      {% for img in heroImages %}
+      <div class="hero-slide"><img src="/images/hero/{{ img }}" alt=""></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+<script>
+(function(){
+  const slides = document.querySelectorAll('.hero-slide'); let i=0;
+  function show(n){ slides.forEach((s,k)=>s.classList.toggle('active',k===n)); }
+  show(0); setInterval(()=>{ i=(i+1)%slides.length; show(i); }, 6000);
+})();
+</script>

@@ -1,0 +1,32 @@
+---
+layout: layouts/base.njk
+title: Galleries
+permalink: "/galleries/index.html"
+---
+<h1>Galleries</h1>
+<p>Explore photo galleries by theme.</p>
+
+<ul class="card-grid">
+  {% for c in galleries %}
+    <li>
+      <a href="/galleries/{{ c.slug }}/">
+        <figure>
+          {% set cover = "/images/hero/IMG_7630-Grampians-Sunset-Bushes-Golden.jpg" %}
+          {% if c.slug == "aurora" %}
+            {% set cover = "/images/hero/DSC00233-Pano-Edit-Aurora-Australis-Mornington-Peninsula.jpg" %}
+          {% elif c.slug == "australian-landscapes" %}
+            {% set cover = "/images/hero/IMG_7630-Grampians-Sunset-Bushes-Golden.jpg" %}
+          {% elif c.slug == "seascapes-sunsets" %}
+            {% set cover = "/images/hero/DSCF2705-topaz-denoiseraw-sharpen-sunrise-rails-pier-Flinders-Mornington-Peninsula.jpg" %}
+          {% elif c.slug == "travel" %}
+            {% set cover = "/images/hero/DSC01557-Vietnam-Fishing-Net.jpg" %}
+          {% elif c.slug == "wildlife" %}
+            {% set cover = "/images/hero/DSC08287-Koala-Victoria-Australia.jpg" %}
+          {% endif %}
+          <img src="{{ cover }}" alt="{{ c.title }}">
+          <figcaption>{{ c.title }}</figcaption>
+        </figure>
+      </a>
+    </li>
+  {% endfor %}
+</ul>
