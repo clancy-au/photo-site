@@ -2,6 +2,64 @@ const fs = require('fs');
 const path = require('path');
 const exifr = require('exifr');
 
+// ------------------------------
+// Constants & helpers
+// ------------------------------
+
+/** Match supported image extensions */
+const IMAGE_EXT_RE = /(\.jpe?g|\.png|\.webp|\.avif|\.gif)$/i;
+
+/**
+ * Clean a human caption from a filename-like string.
+ * Mirrors the original replace-chain exactly.
+ * @param {string} input
+ * @returns {string}
+ */
+function cleanCaptionFromFilename(input) {
+  return input
+    .replace(/\.[^.]+$/, '') // Remove extension
+    .replace(/^[A-Z]{3}\d+[-_]*/i, '') // Remove camera file prefix like DSC01234-
+    .replace(/[-_](Enhanced|Edit|Export|Pano)[-_]*/gi, ' ') // Remove processing tags
+    .replace(/[-_]+/g, ' ') // Replace dashes/underscores with spaces
+    .replace(/\s+/g, ' ') // Normalize multiple spaces
+    .trim();
+}
+
+/**
+ * Derive alt text from a filename (keep it simple, no extra cleanups used for caption).
+ * @param {string} filename
+ */
+function deriveAltFromFilename(filename) {
+  return filename.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, '');
+}
+
+/**
+ * Build the EXIF data map from raw exifr output, preserving original behavior.
+ * @param {any} exif
+ */
+function formatExif(exif) {
+  if (!exif) return {};
+  return {
+    camera: exif.Make && exif.Model ? `${exif.Make} ${exif.Model}` : null,
+    lens: exif.LensModel || null,
+    focalLength: exif.FocalLength ? `${Math.round(exif.FocalLength)}mm` : null,
+    aperture: exif.FNumber ? `f/${exif.FNumber}` : null,
+    shutterSpeed: exif.ExposureTime
+      ? (exif.ExposureTime >= 1
+        ? `${exif.ExposureTime}s`
+        : `1/${Math.round(1 / exif.ExposureTime)}s`)
+      : null,
+    iso: exif.ISO || null,
+    dateTime: exif.DateTimeOriginal || exif.DateTime
+      ? new Date(exif.DateTimeOriginal || exif.DateTime).toLocaleDateString('en-AU', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      : null,
+  };
+}
+
 // Read first meaningful line from a sidecar Markdown file (skip YAML front matter).
 // Also create an empty sidecar .md if it doesn't exist so captions can be added later.
 function readCaptionFromSidecarMD(imageAbsPath) {
@@ -56,7 +114,7 @@ module.exports = async () => {
     try {
       const files = [];
       const fileNames = fs.readdirSync(dir)
-        .filter(f => /\.(jpe?g|png|webp|avif|gif)$/i.test(f));
+        .filter((f) => IMAGE_EXT_RE.test(f));
       
       for (const name of fileNames) {
         const filePath = path.join(dir, name);
@@ -72,22 +130,7 @@ module.exports = async () => {
             exif: true
           });
           
-          if (exif) {
-            exifData = {
-              camera: exif.Make && exif.Model ? `${exif.Make} ${exif.Model}` : null,
-              lens: exif.LensModel || null,
-              focalLength: exif.FocalLength ? `${Math.round(exif.FocalLength)}mm` : null,
-              aperture: exif.FNumber ? `f/${exif.FNumber}` : null,
-              shutterSpeed: exif.ExposureTime ? (exif.ExposureTime >= 1 ? `${exif.ExposureTime}s` : `1/${Math.round(1/exif.ExposureTime)}s`) : null,
-              iso: exif.ISO || null,
-              dateTime: exif.DateTimeOriginal || exif.DateTime ? 
-                new Date(exif.DateTimeOriginal || exif.DateTime).toLocaleDateString('en-AU', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                }) : null
-            };
-          }
+          if (exif) exifData = formatExif(exif);
         } catch (exifError) {
           // EXIF reading failed, continue without it
         }
@@ -98,14 +141,10 @@ module.exports = async () => {
         files.push({
           url: `/galleries/${slug}/${name}`,
           thumb: `/galleries/${slug}/${name}`,
-          alt: name.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, ''),
-          caption: (sidecarCaption && sidecarCaption.length ? sidecarCaption : name)
-            .replace(/\.[^.]+$/, '') // Remove extension
-            .replace(/^[A-Z]{3}\d+[-_]*/i, '') // Remove camera file prefix like DSC01234-
-            .replace(/[-_](Enhanced|Edit|Export|Pano)[-_]*/gi, ' ') // Remove processing tags
-            .replace(/[-_]+/g, ' ') // Replace dashes/underscores with spaces
-            .replace(/\s+/g, ' ') // Normalize multiple spaces
-            .trim(),
+          alt: deriveAltFromFilename(name),
+          caption: (sidecarCaption && sidecarCaption.length
+            ? sidecarCaption
+            : cleanCaptionFromFilename(name)),
           exif: exifData
         });
       }
