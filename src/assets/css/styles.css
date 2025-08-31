@@ -1,15 +1,23 @@
-:root{--bg:#141414;--fg:#eee;--muted:#bbb;--accent:#7fc7ff;--card:#1b1b1b;--border:#2a2a2a}
+:root{--bg:#202020;--fg:#eee;--muted:#bbb;--accent:#7fc7ff;--card:#1b1b1b;--border:#2a2a2a}
 body.dark{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0}
 a{color:inherit;text-decoration:none}
-.site-header,.site-footer{max-width:133.33vh;margin:0 auto;padding:16px;display:flex;justify-content:space-between;align-items:center}
-main{max-width:133.33vh;margin:0 auto;padding:24px}
+.site-header,.site-footer{max-width:133.33vh;margin:0 auto;display:flex;justify-content:space-between;align-items:center}
+.site-header{padding:16px 24px 8px}
+.site-footer{padding:16px 24px}
+main{max-width:133.33vh;margin:0 auto;padding:12px 24px 24px}
 
 /* general tweaks */
 img{display:block;max-width:100%;height:auto}
 ::selection{background:rgba(127,199,255,.25)}
 
 /* header + nav */
-.site-header{position:sticky;top:0;background:linear-gradient(to bottom, rgba(0,0,0,.4), rgba(0,0,0,0));backdrop-filter:saturate(120%) blur(6px);border-bottom:1px solid rgba(255,255,255,.06);z-index:10}
+.site-header{
+  position:sticky;
+  top:0;
+  background:linear-gradient(to bottom, rgba(32,32,32,.4), rgba(32,32,32,0));
+  backdrop-filter:saturate(120%) blur(6px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  z-index:10}
 .brand{font-weight:600;letter-spacing:.02em}
 .site-nav a{padding:0 8px;opacity:.9}
 .site-nav a:hover{opacity:1;color:var(--accent)}
@@ -87,4 +95,32 @@ h1,h2,h3{margin:0 0 12px}
 p{color:#d7d7d7}
 
 /* focus styles */
-a:focus{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+main a:focus{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* mobile responsive styles */
+@media (max-width: 768px) {
+  .site-nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .site-nav .sep {
+    display: none;
+  }
+  .site-header{
+    position: relative;
+  }
+}
+
+/* show hero full bleed on narrower screens */
+@media (max-aspect-ratio: 14/10) {
+  .hero{
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+
+  }
+  main .hero-aspect {
+    border-radius: 0;
+  }
+}
