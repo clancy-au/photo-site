@@ -12,7 +12,16 @@ layout: layouts/base.njk
     <ul class="gallery-grid">
       {% for img in gallery %}
         <li>
-          <a href="{{ img.url }}">
+          <a href="#" class="lightbox-trigger" 
+             data-src="{{ img.url }}" 
+             data-caption="{{ img.caption or img.alt or '' }}"
+             data-camera="{{ img.exif.camera or '' }}"
+             data-lens="{{ img.exif.lens or '' }}"
+             data-focal-length="{{ img.exif.focalLength or '' }}"
+             data-aperture="{{ img.exif.aperture or '' }}"
+             data-shutter-speed="{{ img.exif.shutterSpeed or '' }}"
+             data-iso="{{ img.exif.iso or '' }}"
+             data-date-time="{{ img.exif.dateTime or '' }}">
             <figure>
               <img src="{{ img.thumb or img.url }}" alt="{{ img.alt or '' }}">
               {% if img.caption %}<figcaption>{{ img.caption }}</figcaption>{% endif %}

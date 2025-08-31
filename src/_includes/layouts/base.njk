@@ -12,5 +12,94 @@
 		</nav>
 	</header>
 <main>{{ content | safe }}</main>
+
+<!-- Lightbox Modal -->
+<div id="lightbox" class="lightbox" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="lightbox-caption">
+  <div class="lightbox-backdrop"></div>
+  <div class="lightbox-content">
+    <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
+    <img class="lightbox-image" src="" alt="">
+    <div class="lightbox-info">
+      <div class="lightbox-caption" id="lightbox-caption"></div>
+      <div class="lightbox-exif"></div>
+    </div>
+  </div>
+</div>
+
 <footer class="site-footer"><p>© {{ "now" | date("yyyy") }} {{ site.author or "Clancy Malcolm" }}</p></footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImage = lightbox.querySelector('.lightbox-image');
+  const lightboxCaption = lightbox.querySelector('.lightbox-caption');
+  const lightboxExif = lightbox.querySelector('.lightbox-exif');
+  const lightboxClose = lightbox.querySelector('.lightbox-close');
+  const lightboxBackdrop = lightbox.querySelector('.lightbox-backdrop');
+  
+  // Open lightbox
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.lightbox-trigger')) {
+      e.preventDefault();
+      const trigger = e.target.closest('.lightbox-trigger');
+      
+      const src = trigger.dataset.src;
+      const caption = trigger.dataset.caption;
+      const camera = trigger.dataset.camera;
+      const lens = trigger.dataset.lens;
+      const focalLength = trigger.dataset.focalLength;
+      const aperture = trigger.dataset.aperture;
+      const shutterSpeed = trigger.dataset.shutterSpeed;
+      const iso = trigger.dataset.iso;
+      const dateTime = trigger.dataset.dateTime;
+      
+      lightboxImage.src = src;
+      lightboxImage.alt = caption;
+      lightboxCaption.textContent = caption;
+      
+      // Build EXIF info
+      const exifItems = [];
+      if (camera) exifItems.push(camera);
+      if (lens) exifItems.push(lens);
+      if (focalLength) exifItems.push(focalLength);
+      if (aperture) exifItems.push(aperture);
+      if (shutterSpeed) exifItems.push(shutterSpeed);
+      if (iso) exifItems.push(`ISO ${iso}`);
+      
+      let exifHTML = '';
+      if (exifItems.length > 0) {
+        exifHTML += '<div class="exif-data">' + exifItems.join(' • ') + '</div>';
+      }
+      if (dateTime) {
+        exifHTML += '<div class="exif-date">' + dateTime + '</div>';
+      }
+      
+      lightboxExif.innerHTML = exifHTML;
+      
+      lightbox.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Focus management
+      lightboxClose.focus();
+    }
+  });
+  
+  // Close lightbox
+  function closeLightbox() {
+    lightbox.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  
+  lightboxClose.addEventListener('click', closeLightbox);
+  lightboxBackdrop.addEventListener('click', closeLightbox);
+  
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+      closeLightbox();
+    }
+  });
+});
+</script>
+
 </body></html>
