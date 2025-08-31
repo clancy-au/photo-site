@@ -1,0 +1,49 @@
+---
+layout: layouts/base.njk
+---
+{# Compute the rendered image URL from the Markdown sidecar path #}
+{% set imgUrl = page.filePathStem | replace('/galleries/images','/galleries') %}
+
+{# Find this image's record (caption/exif) from galleryImages #}
+{% set img = null %}
+{% for slug, arr in galleryImages %}
+  {% for rec in arr %}
+    {% if rec.url == imgUrl %}
+      {% set img = rec %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+{# Hero-style single image, reusing hero CSS #}
+<section class="hero">
+  <div class="hero-aspect">
+    <div class="hero-track">
+      <div class="hero-slide active"><img src="{{ imgUrl }}" alt="{{ (img and (img.alt or img.caption)) or title or '' }}"></div>
+    </div>
+  </div>
+  {% if img and img.caption %}
+  <div class="hero-caption"><strong>{{ img.caption }}</strong></div>
+  {% endif %}
+  {% if img and img.exif %}
+  <div class="hero-exif">
+    {% set items = [] %}
+    {% if img.exif.camera %}{% set items = items.concat([img.exif.camera]) %}{% endif %}
+    {% if img.exif.lens %}{% set items = items.concat([img.exif.lens]) %}{% endif %}
+    {% if img.exif.focalLength %}{% set items = items.concat([img.exif.focalLength]) %}{% endif %}
+    {% if img.exif.aperture %}{% set items = items.concat([img.exif.aperture]) %}{% endif %}
+    {% if img.exif.shutterSpeed %}{% set items = items.concat([img.exif.shutterSpeed]) %}{% endif %}
+    {% if img.exif.iso %}{% set items = items.concat(['ISO ' ~ img.exif.iso]) %}{% endif %}
+    {% if items.length %}
+      <div class="exif-data">{{ items | join(' • ') }}</div>
+    {% endif %}
+    {% if img.exif.dateTime %}
+      <div class="exif-date">Captured {{ img.exif.dateTime }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+{# Story/content from the .jpg.md body #}
+<article class="image-story">
+  {{ content | safe }}
+</article>

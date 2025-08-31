@@ -2,6 +2,49 @@ const fs = require('fs');
 const path = require('path');
 const exifr = require('exifr');
 
+// Read first meaningful line from a sidecar Markdown file (skip YAML front matter).
+// Also create an empty sidecar .md if it doesn't exist so captions can be added later.
+function readCaptionFromSidecarMD(imageAbsPath) {
+  const mdPath = imageAbsPath + '.md';
+  try {
+    if (!fs.existsSync(mdPath)) {
+      // Create an empty sidecar file for the author to fill in later
+      try {
+        fs.writeFileSync(mdPath, '');
+      } catch {}
+      return null; // No caption yet; will fallback to filename-derived caption
+    }
+
+    const raw = fs.readFileSync(mdPath, 'utf8');
+    if (!raw.trim()) return null; // empty file, fallback
+
+    const lines = raw.split(/\r?\n/);
+    // Skip front matter if present
+    let i = 0;
+    if (lines[0] && lines[0].trim() === '---') {
+      i = 1;
+      while (i < lines.length && lines[i].trim() !== '---') i++;
+      if (i < lines.length && lines[i].trim() === '---') i++;
+    }
+
+    // First non-empty content line becomes the caption
+    let line = '';
+    for (; i < lines.length; i++) {
+      const t = lines[i].trim();
+      if (t.length) { line = t; break; }
+    }
+    if (!line) return null;
+
+    // Clean basic markdown from the line
+    line = line.replace(/^#{1,6}\s+/, ''); // strip heading hashes
+    line = line.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // [text](url) -> text
+    line = line.replace(/[*_`~]+/g, ''); // emphasis/backticks/tilde
+    return line.trim();
+  } catch (e) {
+    return null;
+  }
+}
+
 // Build a gallery manifest at build time by reading src/galleries/images/*
 module.exports = async () => {
   const root = path.join(__dirname, '..', 'galleries', 'images');
@@ -49,11 +92,14 @@ module.exports = async () => {
           // EXIF reading failed, continue without it
         }
         
+        // Prefer caption from sidecar .md, else fallback to current filename-based caption
+        const sidecarCaption = readCaptionFromSidecarMD(filePath);
+
         files.push({
           url: `/galleries/${slug}/${name}`,
           thumb: `/galleries/${slug}/${name}`,
           alt: name.replace(/[-_]/g, ' ').replace(/\.[^.]+$/, ''),
-          caption: name
+          caption: (sidecarCaption && sidecarCaption.length ? sidecarCaption : name)
             .replace(/\.[^.]+$/, '') // Remove extension
             .replace(/^[A-Z]{3}\d+[-_]*/i, '') // Remove camera file prefix like DSC01234-
             .replace(/[-_](Enhanced|Edit|Export|Pano)[-_]*/gi, ' ') // Remove processing tags

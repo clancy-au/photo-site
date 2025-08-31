@@ -22,10 +22,7 @@ layout: layouts/base.njk
              data-shutter-speed="{{ img.exif.shutterSpeed or '' }}"
              data-iso="{{ img.exif.iso or '' }}"
              data-date-time="{{ img.exif.dateTime or '' }}">
-            <figure>
-              <img src="{{ img.thumb or img.url }}" alt="{{ img.alt or '' }}">
-              {% if img.caption %}<figcaption>{{ img.caption }}</figcaption>{% endif %}
-            </figure>
+             <img src="{{ img.thumb or img.url }}" alt="{{ img.alt or '' }}">
           </a>
         </li>
       {% endfor %}

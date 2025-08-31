@@ -1,0 +1,1 @@
+Sydney Harbour and Opera House, Long Exposure
