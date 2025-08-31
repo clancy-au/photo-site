@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Lightbox Test</title>
+    <style>
+        body { 
+            font-family: system-ui; 
+            padding: 20px; 
+            background: #333; 
+            color: white; 
+        }
+        .test-button {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 10px 0;
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            text-decoration: none;
+            text-align: center;
+        }
+        #log {
+            background: #222;
+            padding: 10px;
+            margin: 20px 0;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mobile Lightbox Test</h1>
+    <p>Use this page to test the lightbox on your iPhone:</p>
+    
+    <a href="/galleries/aurora/" class="test-button">Test Aurora Gallery</a>
+    <a href="/galleries/wildlife/" class="test-button">Test Wildlife Gallery</a>
+    
+    <h2>Debug Log</h2>
+    <div id="log"></div>
+    
+    <script>
+        // Capture console logs for mobile debugging
+        const logDiv = document.getElementById('log');
+        const originalLog = console.log;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logDiv.innerHTML += '<div>' + args.join(' ') + '</div>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+        
+        console.log('Mobile test page loaded');
+        console.log('User agent:', navigator.userAgent);
+        console.log('Touch support:', 'ontouchstart' in window);
+    </script>
+</body>
+</html>

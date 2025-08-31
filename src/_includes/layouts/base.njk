@@ -24,6 +24,8 @@
       <div class="lightbox-exif"></div>
     </div>
   </div>
+  <!-- Emergency close button for mobile -->
+  <button class="lightbox-emergency-close" aria-label="Emergency close" style="position: fixed; top: 10px; left: 10px; z-index: 1003; background: rgba(255,0,0,0.8); color: white; border: none; border-radius: 50%; width: 44px; height: 44px; font-size: 20px;">&times;</button>
 </div>
 
 <footer class="site-footer"><p>© {{ "now" | date("yyyy") }} {{ site.author or "Clancy Malcolm" }}</p></footer>
@@ -36,11 +38,19 @@ document.addEventListener('DOMContentLoaded', function() {
   const lightboxExif = lightbox.querySelector('.lightbox-exif');
   const lightboxClose = lightbox.querySelector('.lightbox-close');
   const lightboxBackdrop = lightbox.querySelector('.lightbox-backdrop');
+  const emergencyClose = lightbox.querySelector('.lightbox-emergency-close');
   
-  // Open lightbox
-  document.addEventListener('click', function(e) {
+  let isLightboxOpen = false;
+  
+  // Open lightbox - handle both click and touch events
+  function handleTriggerEvent(e) {
     if (e.target.closest('.lightbox-trigger')) {
+      console.log('Lightbox trigger activated', e.type); // Debug log
       e.preventDefault();
+      e.stopPropagation();
+      
+      if (isLightboxOpen) return;
+      
       const trigger = e.target.closest('.lightbox-trigger');
       
       const src = trigger.dataset.src;
@@ -76,29 +86,91 @@ document.addEventListener('DOMContentLoaded', function() {
       
       lightboxExif.innerHTML = exifHTML;
       
+      // Open lightbox
+      console.log('Opening lightbox'); // Debug log
+      isLightboxOpen = true;
       lightbox.style.display = 'flex';
+      document.body.classList.add('lightbox-open');
       document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
       
-      // Focus management
-      lightboxClose.focus();
+      // Focus management for accessibility
+      setTimeout(() => {
+        lightboxClose.focus();
+      }, 100);
     }
-  });
+  }
+  
+  // Add both click and touchstart event listeners
+  document.addEventListener('click', handleTriggerEvent);
+  document.addEventListener('touchstart', handleTriggerEvent, { passive: false });
   
   // Close lightbox
   function closeLightbox() {
+    console.log('Closing lightbox'); // Debug log
+    if (!isLightboxOpen) return;
+    
+    isLightboxOpen = false;
     lightbox.style.display = 'none';
+    document.body.classList.remove('lightbox-open');
     document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
   }
   
-  lightboxClose.addEventListener('click', closeLightbox);
-  lightboxBackdrop.addEventListener('click', closeLightbox);
+  // Close button and backdrop handlers
+  lightboxClose.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLightbox();
+  });
   
-  // Close on Escape key
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && lightbox.style.display === 'flex') {
+  lightboxClose.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLightbox();
+  }, { passive: false });
+  
+  // Emergency close button
+  emergencyClose.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLightbox();
+  });
+  
+  emergencyClose.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeLightbox();
+  }, { passive: false });
+  
+  lightboxBackdrop.addEventListener('click', function(e) {
+    if (e.target === lightboxBackdrop) {
       closeLightbox();
     }
   });
+  
+  lightboxBackdrop.addEventListener('touchstart', function(e) {
+    if (e.target === lightboxBackdrop) {
+      e.preventDefault();
+      closeLightbox();
+    }
+  }, { passive: false });
+  
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && isLightboxOpen) {
+      closeLightbox();
+    }
+  });
+  
+  // Prevent scroll on lightbox content
+  lightbox.addEventListener('touchmove', function(e) {
+    if (isLightboxOpen) {
+      e.preventDefault();
+    }
+  }, { passive: false });
 });
 </script>
 
