@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const lightboxClose = lightbox.querySelector('.lightbox-close');
   const lightboxBackdrop = lightbox.querySelector('.lightbox-backdrop');
   
+  // Ensure the lightbox is a direct child of <body> (iOS fixed-position quirk)
+  if (lightbox.parentElement !== document.body) {
+    document.body.appendChild(lightbox);
+  }
+  
   // Open lightbox
   document.addEventListener('click', function(e) {
     if (e.target.closest('.lightbox-trigger')) {
@@ -75,10 +80,16 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       lightboxExif.innerHTML = exifHTML;
-      
+
       lightbox.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-      
+
+      // iOS-friendly scroll lock: fix body to current scroll position
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      document.body.dataset.scrollY = String(scrollY);
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
       // Focus management
       lightboxClose.focus();
     }
@@ -87,7 +98,13 @@ document.addEventListener('DOMContentLoaded', function() {
   // Close lightbox
   function closeLightbox() {
     lightbox.style.display = 'none';
+    // Restore scroll lock
+    const y = parseInt(document.body.dataset.scrollY || '0', 10);
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
     document.body.style.overflow = '';
+    window.scrollTo(0, y);
   }
   
   lightboxClose.addEventListener('click', closeLightbox);
