@@ -2,6 +2,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{ title or site.title or "Site" }}</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
+<link rel="stylesheet" href="/assets/css/justified-gallery.css">
 </head><body class="dark">
 	<header class="site-header">
 		<h1><a class="brand" href="/">{{ site.title or "Clancy Malcolm Photography" }}</a></h1>
@@ -44,12 +45,19 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Open lightbox
   document.addEventListener('click', function(e) {
-    if (e.target.closest('.lightbox-trigger')) {
+    // Check if clicking on justified gallery item or any child
+    const galleryItem = e.target.closest('.justified-gallery-item');
+    if (galleryItem) {
       e.preventDefault();
-      const trigger = e.target.closest('.lightbox-trigger');
       
-      const src = trigger.dataset.src;
-      const caption = trigger.dataset.caption;
+      // Find the trigger element - either the item itself or a child with lightbox-trigger class
+      const trigger = galleryItem.classList.contains('lightbox-trigger') ? 
+                      galleryItem : 
+                      galleryItem.querySelector('.lightbox-trigger') || galleryItem; // Fallback to gallery item if no trigger found
+      
+      // Extract image data
+      const src = trigger.getAttribute('data-src') || trigger.dataset.src;
+      const caption = trigger.getAttribute('data-caption') || trigger.dataset.caption;
       const camera = trigger.dataset.camera;
       const lens = trigger.dataset.lens;
       const focalLength = trigger.dataset.focalLength;
@@ -58,40 +66,42 @@ document.addEventListener('DOMContentLoaded', function() {
       const iso = trigger.dataset.iso;
       const dateTime = trigger.dataset.dateTime;
       
-      lightboxImage.src = src;
-      lightboxImage.alt = caption;
-      lightboxCaption.textContent = caption;
-      
-      // Build EXIF info
-      const exifItems = [];
-      if (camera) exifItems.push(camera);
-      if (lens) exifItems.push(lens);
-      if (focalLength) exifItems.push(focalLength);
-      if (aperture) exifItems.push(aperture);
-      if (shutterSpeed) exifItems.push(shutterSpeed);
-      if (iso) exifItems.push(`ISO ${iso}`);
-      
-      let exifHTML = '';
-      if (exifItems.length > 0) {
-        exifHTML += '<div class="exif-data">' + exifItems.join(' • ') + '</div>';
+      if (src) {
+        lightboxImage.src = src;
+        lightboxImage.alt = caption || '';
+        lightboxCaption.textContent = caption || '';
+        
+        // Build EXIF info
+        const exifItems = [];
+        if (camera) exifItems.push(camera);
+        if (lens) exifItems.push(lens);
+        if (focalLength) exifItems.push(focalLength);
+        if (aperture) exifItems.push(aperture);
+        if (shutterSpeed) exifItems.push(shutterSpeed);
+        if (iso) exifItems.push(`ISO ${iso}`);
+        
+        let exifHTML = '';
+        if (exifItems.length > 0) {
+          exifHTML += '<div class="exif-data">' + exifItems.join(' • ') + '</div>';
+        }
+        if (dateTime) {
+          exifHTML += '<div class="exif-date">Captured ' + dateTime + '</div>';
+        }
+        
+        lightboxExif.innerHTML = exifHTML;
+
+        lightbox.style.display = 'flex';
+
+        // iOS-friendly scroll lock: fix body to current scroll position
+        const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+        document.body.dataset.scrollY = String(scrollY);
+        document.body.style.position = 'fixed';
+        document.body.style.top = `-${scrollY}px`;
+        document.body.style.width = '100%';
+
+        // Focus management
+        lightboxClose.focus();
       }
-      if (dateTime) {
-        exifHTML += '<div class="exif-date">Captured ' + dateTime + '</div>';
-      }
-      
-      lightboxExif.innerHTML = exifHTML;
-
-      lightbox.style.display = 'flex';
-
-      // iOS-friendly scroll lock: fix body to current scroll position
-      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
-      document.body.dataset.scrollY = String(scrollY);
-      document.body.style.position = 'fixed';
-      document.body.style.top = `-${scrollY}px`;
-      document.body.style.width = '100%';
-
-      // Focus management
-      lightboxClose.focus();
     }
   });
   
@@ -119,4 +129,5 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
+<script src="/assets/js/justified-gallery.js"></script>
 </body></html>

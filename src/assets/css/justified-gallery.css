@@ -1,0 +1,121 @@
+/* Justified Gallery Layout - Flickr Style */
+.justified-gallery {
+  width: 100%;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.justified-gallery-row {
+  display: flex;
+  margin-bottom: 15px;
+  width: 100%;
+  transition: height 0.3s ease-out;
+}
+
+.justified-gallery-item {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  margin-right: 15px;
+  opacity: 0;
+  animation: fadeIn 0.4s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.justified-gallery-item:last-child {
+  margin-right: 0;
+}
+
+.justified-gallery-item .lightbox-trigger {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+.justified-gallery-item img {
+  height: 100%;
+  width: auto; /* preserve aspect ratio based on row height */
+  max-width: 100%; /* safety for very tall/narrow images */
+  object-fit: contain; /* never crop */
+  object-position: center center;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.justified-gallery-item:hover img {
+  transform: scale(1.03);
+}
+
+.justified-gallery-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.2);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 1;
+}
+
+.justified-gallery-item:hover::before {
+  opacity: 1;
+}
+
+.justified-gallery-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  padding: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 0.9rem;
+  z-index: 2;
+}
+
+.justified-gallery-item:hover .justified-gallery-caption {
+  opacity: 1;
+}
+
+/* Loading indicator */
+.justified-gallery-loading {
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--muted, #bbb);
+  font-size: 16px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  margin: 16px 0;
+  backdrop-filter: blur(6px);
+}
+
+.justified-gallery-loading .jg-spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: var(--accent, #7fc7ff);
+  animation: jg-spin 0.9s linear infinite;
+  margin-right: 10px;
+  vertical-align: -4px;
+}
+
+.justified-gallery-loading .jg-text {
+  color: var(--fg, #eee);
+}
+
+@keyframes jg-spin {
+  to { transform: rotate(360deg); }
+}

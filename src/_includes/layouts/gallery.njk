@@ -9,7 +9,7 @@ layout: layouts/base.njk
     {% if description %}<p class="lede">{{ description }}</p>{% endif %}
   </header>
   {% if gallery and gallery.length %}
-    <ul class="gallery-grid">
+    <ul class="justified-gallery">
       {% for img in gallery %}
         <li>
           <a href="#" class="lightbox-trigger" 
