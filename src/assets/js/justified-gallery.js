@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
         scaleFactor = 1.5;
       }
       
-      const rowHeight = isLastRow && scaleFactor < 1 ? targetRowHeight : targetRowHeight * scaleFactor;
+      const rowHeight = targetRowHeight * scaleFactor;
       
       for (let imgData of images) {
         const item = document.createElement('div');
