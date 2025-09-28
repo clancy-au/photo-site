@@ -1,5 +1,13 @@
 <!doctype html><html lang="en"><head>
 
+{# Pre-calculate gallery images for Open Graph tags if in a gallery page #}
+{% if page.url.startsWith('/galleries/') and not gallery %}
+  {% set gallerySlug = page.fileSlug or page.url | replace('/galleries/','') | replace('/','') %}
+  {% if galleryImages[gallerySlug] %}
+    {% set gallery = galleryImages[gallerySlug] %}
+  {% endif %}
+{% endif %}
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{ title or site.title or "Site" }}</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
@@ -10,9 +18,12 @@
 <meta property="og:url" content="{{ site.url }}{{ page.url }}">
 <meta property="og:title" content="{{ title or site.title }}">
 <meta property="og:description" content="{{ description or site.tagline }}">
-{%- if featured_image or (gallery and gallery.length) -%}
-  {% set ogImage = featured_image or (gallery and gallery[0].url) %}
-  <meta property="og:image" content="{{ site.url }}{{ ogImage }}">
+{%- if featured_image -%}
+  <meta property="og:image" content="{{ site.url }}{{ featured_image }}">
+{%- elif gallery and gallery.length -%}
+  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
+  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
+  <meta property="og:image" content="{{ site.url }}{{ galleryImage }}">
 {%- else -%}
   <meta property="og:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}
@@ -22,9 +33,12 @@
 <meta name="twitter:url" content="{{ site.url }}{{ page.url }}">
 <meta name="twitter:title" content="{{ title or site.title }}">
 <meta name="twitter:description" content="{{ description or site.tagline }}">
-{%- if featured_image or (gallery and gallery.length) -%}
-  {% set twitterImage = featured_image or (gallery and gallery[0].url) %}
-  <meta name="twitter:image" content="{{ site.url }}{{ twitterImage }}">
+{%- if featured_image -%}
+  <meta name="twitter:image" content="{{ site.url }}{{ featured_image }}">
+{%- elif gallery and gallery.length -%}
+  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
+  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
+  <meta name="twitter:image" content="{{ site.url }}{{ galleryImage }}">
 {%- else -%}
   <meta name="twitter:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}

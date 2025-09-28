@@ -1,4 +1,13 @@
-# Social Sharing Implementation
+# Social Shar### How It Works
+
+### Base Template Implementation
+
+The Open Graph tags are implemented in the `src/_includes/layouts/base.njk` template. The code looks for specific variables in this order:
+
+1. Page-specific variables (title, description, featured_image)
+2. Gallery-specific images (first image in a gallery)
+   - Note: Gallery image paths are corrected to add the 'images' directory in the path
+3. Default site values (site.title, site.tagline)mentation
 
 This document describes how the Open Graph and Twitter Card meta tags are implemented in the Clancy Malcolm Photography website.
 
@@ -27,9 +36,12 @@ The Open Graph tags are implemented in the `src/_includes/layouts/base.njk` temp
 <meta property="og:url" content="{{ site.url }}{{ page.url }}">
 <meta property="og:title" content="{{ title or site.title }}">
 <meta property="og:description" content="{{ description or site.tagline }}">
-{%- if featured_image or (gallery and gallery.length) -%}
-  {% set ogImage = featured_image or (gallery and gallery[0].url) %}
-  <meta property="og:image" content="{{ site.url }}{{ ogImage }}">
+{%- if featured_image -%}
+  <meta property="og:image" content="{{ site.url }}{{ featured_image }}">
+{%- elif gallery and gallery.length -%}
+  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
+  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
+  <meta property="og:image" content="{{ site.url }}{{ galleryImage }}">
 {%- else -%}
   <meta property="og:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}
@@ -39,9 +51,12 @@ The Open Graph tags are implemented in the `src/_includes/layouts/base.njk` temp
 <meta name="twitter:url" content="{{ site.url }}{{ page.url }}">
 <meta name="twitter:title" content="{{ title or site.title }}">
 <meta name="twitter:description" content="{{ description or site.tagline }}">
-{%- if featured_image or (gallery and gallery.length) -%}
-  {% set twitterImage = featured_image or (gallery and gallery[0].url) %}
-  <meta name="twitter:image" content="{{ site.url }}{{ twitterImage }}">
+{%- if featured_image -%}
+  <meta name="twitter:image" content="{{ site.url }}{{ featured_image }}">
+{%- elif gallery and gallery.length -%}
+  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
+  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
+  <meta name="twitter:image" content="{{ site.url }}{{ galleryImage }}">
 {%- else -%}
   <meta name="twitter:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}
