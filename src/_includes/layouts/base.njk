@@ -4,6 +4,30 @@
 <title>{{ title or site.title or "Site" }}</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
 <link rel="stylesheet" href="/assets/css/justified-gallery.css">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ site.url }}{{ page.url }}">
+<meta property="og:title" content="{{ title or site.title }}">
+<meta property="og:description" content="{{ description or site.tagline }}">
+{%- if featured_image or (gallery and gallery.length) -%}
+  {% set ogImage = featured_image or (gallery and gallery[0].url) %}
+  <meta property="og:image" content="{{ site.url }}{{ ogImage }}">
+{%- else -%}
+  <meta property="og:image" content="{{ site.url }}/images/covers/site-default.jpg">
+{%- endif -%}
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="{{ site.url }}{{ page.url }}">
+<meta name="twitter:title" content="{{ title or site.title }}">
+<meta name="twitter:description" content="{{ description or site.tagline }}">
+{%- if featured_image or (gallery and gallery.length) -%}
+  {% set twitterImage = featured_image or (gallery and gallery[0].url) %}
+  <meta name="twitter:image" content="{{ site.url }}{{ twitterImage }}">
+{%- else -%}
+  <meta name="twitter:image" content="{{ site.url }}/images/covers/site-default.jpg">
+{%- endif -%}
 </head><body class="dark">
 	<header class="site-header">
 		<h1><a class="brand" href="/">{{ site.title or "Clancy Malcolm Photography" }}</a></h1>
