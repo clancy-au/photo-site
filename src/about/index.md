@@ -1,6 +1,6 @@
 ---
 layout: layouts/base.njk
-title: About
+title: About Clancy Malcolm Photography
 ---
 # About
 

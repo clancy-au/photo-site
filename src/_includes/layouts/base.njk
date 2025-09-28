@@ -1,4 +1,5 @@
 <!doctype html><html lang="en"><head>
+
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{{ title or site.title or "Site" }}</title>
 <link rel="stylesheet" href="/assets/css/styles.css">
@@ -12,6 +13,23 @@
 			{% endfor %}
 		</nav>
 	</header>
+
+  <!-- Standard favicon -->
+  <link rel="icon" href="/final-favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon/final-favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon/final-favicon-16.png">
+
+  <!-- Larger icons -->
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon/final-favicon-48.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon/final-favicon-64.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="/assets/favicon/final-favicon-128.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon/final-favicon-192.png">
+  <link rel="icon" type="image/png" sizes="256x256" href="/assets/favicon/final-favicon-256.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/assets/favicon/final-favicon-512.png">
+
+  <!-- Apple touch icon -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/final-favicon-180.png">
+
 <main>{{ content | safe }}</main>
 
 <!-- Lightbox Modal -->
