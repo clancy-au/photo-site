@@ -21,9 +21,8 @@
 {%- if featured_image -%}
   <meta property="og:image" content="{{ site.url }}{{ featured_image }}">
 {%- elif gallery and gallery.length -%}
-  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
-  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
-  <meta property="og:image" content="{{ site.url }}{{ galleryImage }}">
+  {# Extract the image name directly from the URL path #}
+  <meta property="og:image" content="{{ site.url }}{{ gallery[0].url }}">
 {%- else -%}
   <meta property="og:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}
@@ -36,9 +35,9 @@
 {%- if featured_image -%}
   <meta name="twitter:image" content="{{ site.url }}{{ featured_image }}">
 {%- elif gallery and gallery.length -%}
-  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
-  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
-  <meta name="twitter:image" content="{{ site.url }}{{ galleryImage }}">
+  {# Extract the image name directly from the URL path #}
+  {% set gallerySlug = page.fileSlug or page.url | replace('/galleries/','') | replace('/','') %}
+  <meta name="twitter:image" content="{{ site.url }}/galleries/images/{{ gallerySlug }}/{{ gallery[0].url | replace('/galleries/' + gallerySlug + '/', '') }}">
 {%- else -%}
   <meta name="twitter:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}

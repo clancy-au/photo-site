@@ -6,7 +6,6 @@ The Open Graph tags are implemented in the `src/_includes/layouts/base.njk` temp
 
 1. Page-specific variables (title, description, featured_image)
 2. Gallery-specific images (first image in a gallery)
-   - Note: Gallery image paths are corrected to add the 'images' directory in the path
 3. Default site values (site.title, site.tagline)mentation
 
 This document describes how the Open Graph and Twitter Card meta tags are implemented in the Clancy Malcolm Photography website.
@@ -39,9 +38,9 @@ The Open Graph tags are implemented in the `src/_includes/layouts/base.njk` temp
 {%- if featured_image -%}
   <meta property="og:image" content="{{ site.url }}{{ featured_image }}">
 {%- elif gallery and gallery.length -%}
-  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
-  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
-  <meta property="og:image" content="{{ site.url }}{{ galleryImage }}">
+  {# Extract the image name directly from the URL path #}
+  {% set gallerySlug = page.fileSlug or page.url | replace('/galleries/','') | replace('/','') %}
+  <meta property="og:image" content="{{ site.url }}/galleries/images/{{ gallerySlug }}/{{ gallery[0].url | replace('/galleries/' + gallerySlug + '/', '') }}">
 {%- else -%}
   <meta property="og:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}
@@ -54,9 +53,9 @@ The Open Graph tags are implemented in the `src/_includes/layouts/base.njk` temp
 {%- if featured_image -%}
   <meta name="twitter:image" content="{{ site.url }}{{ featured_image }}">
 {%- elif gallery and gallery.length -%}
-  {# Fix URL path - gallery URLs from galleryImages.js are missing /images/ directory #}
-  {% set galleryImage = gallery[0].url | replace('/galleries/', '/galleries/images/') %}
-  <meta name="twitter:image" content="{{ site.url }}{{ galleryImage }}">
+  {# Extract the image name directly from the URL path #}
+  {% set gallerySlug = page.fileSlug or page.url | replace('/galleries/','') | replace('/','') %}
+  <meta name="twitter:image" content="{{ site.url }}/galleries/images/{{ gallerySlug }}/{{ gallery[0].url | replace('/galleries/' + gallerySlug + '/', '') }}">
 {%- else -%}
   <meta name="twitter:image" content="{{ site.url }}/images/covers/site-default.jpg">
 {%- endif -%}
