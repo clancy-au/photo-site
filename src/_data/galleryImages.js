@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const exifr = require('exifr');
+const sharp = require('sharp');
+const Image = require('@11ty/eleventy-img');
 
 // ------------------------------
 // Constants & helpers
@@ -8,6 +10,23 @@ const exifr = require('exifr');
 
 /** Match supported image extensions */
 const IMAGE_EXT_RE = /(\.jpe?g|\.png|\.webp|\.avif|\.gif)$/i;
+
+/**
+ * Image size configurations for responsive images
+ * Each size will be generated and made available in srcset
+ * These will be used with eleventy-img
+ */
+const IMAGE_SIZES = [400, 800, 1200, 1600, 2000];
+
+/**
+ * Ensures a directory exists, creates it if it doesn't
+ * @param {string} dir - Directory path
+ */
+function ensureDir(dir) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
 
 /**
  * Clean a human caption from a filename-like string.
@@ -103,6 +122,66 @@ function readCaptionFromSidecarMD(imageAbsPath) {
   }
 }
 
+/**
+ * Generate responsive image versions for the given image file using eleventy-img
+ * @param {string} filePath - Original image path
+ * @param {string} slug - Gallery slug
+ * @param {string} name - Image filename
+ * @returns {Object} Object with srcset, sizes, dimensions, and aspect ratio information
+ */
+async function generateResponsiveImages(filePath, slug, name) {
+  //const startTime = Date.now();
+  //console.log(`[${new Date().toISOString()}] generateResponsiveImages processing image: ${slug}/${name}`);
+  // Extract base filename
+  const baseName = path.parse(name).name;
+  
+  // Generate responsive images with eleventy-img
+  const metadata = await Image(filePath, {
+    widths: IMAGE_SIZES,
+    formats: ["avif", "jpeg"],
+    outputDir: path.join(__dirname, "../../_site/galleries", slug, "responsive"),
+    urlPath: `/galleries/${slug}/responsive`,
+    filenameFormat: (id, src, width, format) => {
+      return `${baseName}-${width}w.${format}`;
+    },
+    sharpOptions: {
+      animated: false
+    }
+  });
+  
+  // Get original image dimensions to calculate aspect ratio
+  const dimensions = await sharp(filePath).metadata();
+  const aspectRatio = dimensions.width / dimensions.height;
+  
+  // Format srcset strings for each format
+  const srcsets = {};
+  const fullUrls = {};
+  
+  for (const format in metadata) {
+    srcsets[format] = metadata[format].map(entry => `${entry.url} ${entry.width}w`).join(', ');
+    // Store the largest image URL for each format
+    fullUrls[format] = metadata[format].reduce((largest, current) => 
+      current.width > largest.width ? current : largest, 
+      metadata[format][0]
+    ).url;
+  }
+  
+  // We don't need to calculate sizes here anymore as it's calculated in the JS
+  // based on the actual row height and aspect ratio
+  
+  return {
+    srcset: srcsets.jpeg,
+    avifSrcset: srcsets.avif,
+    width: dimensions.width,
+    height: dimensions.height,
+    aspectRatio: aspectRatio,
+    fullUrl: fullUrls.jpeg,
+    avifFullUrl: fullUrls.avif,
+    // Store available widths for future reference
+    widths: IMAGE_SIZES.filter(size => size < dimensions.width).concat([dimensions.width])
+  };
+}
+
 // Build a gallery manifest at build time by reading src/galleries/images/*
 module.exports = async () => {
   const root = path.join(__dirname, '..', 'galleries', 'images');
@@ -138,14 +217,21 @@ module.exports = async () => {
         // Prefer caption from sidecar .md, else fallback to current filename-based caption
         const sidecarCaption = readCaptionFromSidecarMD(filePath);
 
+        // Generate responsive image versions and calculate aspect ratio
+        const responsive = await generateResponsiveImages(filePath, slug, name);
+
         files.push({
           url: `/galleries/${slug}/${name}`,
-          thumb: `/galleries/${slug}/${name}`,
+          thumb: responsive.fullUrl, // Use the processed full-size image
           alt: deriveAltFromFilename(name),
           caption: (sidecarCaption && sidecarCaption.length
             ? sidecarCaption
             : cleanCaptionFromFilename(name)),
-          exif: exifData
+          exif: exifData,
+          responsive: responsive, // Add responsive image data
+          width: responsive.width, // Store original width
+          height: responsive.height, // Store original height
+          aspectRatio: responsive.aspectRatio // Store pre-calculated aspect ratio
         });
       }
       

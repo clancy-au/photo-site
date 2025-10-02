@@ -9,11 +9,22 @@ layout: layouts/base.njk
     {% if description %}<p class="lede">{{ description }}</p>{% endif %}
   </header>
   {% if gallery and gallery.length %}
-    <ul class="justified-gallery">
+    <ul class="justified-gallery" data-ready="false">
       {% for img in gallery %}
         <li>
           <a href="#" class="lightbox-trigger" 
-             data-src="{{ img.url }}" 
+             data-src="{{ img.url }}"
+             data-thumb="{{ img.thumb or img.url }}"
+             data-alt="{{ img.alt or '' }}"
+             {% if img.responsive %}
+             data-srcset="{{ img.responsive.srcset }}"
+             {% if img.responsive.avifSrcset %}
+             data-avif-srcset="{{ img.responsive.avifSrcset }}"
+             {% if img.responsive.avifFullUrl %}
+             data-avif-url="{{ img.responsive.avifFullUrl }}"
+             {% endif %}
+             {% endif %}
+             {% endif %} 
              data-caption="{{ img.caption or img.alt or '' }}"
              data-camera="{{ img.exif.camera or '' }}"
              data-lens="{{ img.exif.lens or '' }}"
@@ -21,8 +32,14 @@ layout: layouts/base.njk
              data-aperture="{{ img.exif.aperture or '' }}"
              data-shutter-speed="{{ img.exif.shutterSpeed or '' }}"
              data-iso="{{ img.exif.iso or '' }}"
-             data-date-time="{{ img.exif.dateTime or '' }}">
-             <img src="{{ img.thumb or img.url }}" alt="{{ img.alt or '' }}">
+             data-date-time="{{ img.exif.dateTime or '' }}"
+             {% if img.width and img.height %}
+             data-width="{{ img.width }}"
+             data-height="{{ img.height }}"
+             data-aspect-ratio="{{ img.aspectRatio }}"
+             {% endif %}>
+             {# Images will be generated in JavaScript #}
+             <span class="gallery-img-placeholder"></span>
           </a>
         </li>
       {% endfor %}

@@ -1,31 +1,75 @@
 /**
  * Justified Gallery - Flickr-style image gallery layout
+ * Enhanced with pre-calculated aspect ratios
  */
 document.addEventListener('DOMContentLoaded', function() {
   const justifiedGallery = document.querySelector('.justified-gallery');
   if (!justifiedGallery) return;
 
-  const images = Array.from(justifiedGallery.querySelectorAll('img'));
   const targetRowHeight = 500; // Target height for each row in pixels
   let containerWidth = justifiedGallery.offsetWidth;
   const spacing = 15; // Gap between images in pixels
   
+  // Save the original HTML to preserve the content
+  const originalHTML = justifiedGallery.innerHTML;
+  
   // Clear the gallery
   justifiedGallery.innerHTML = '';
-  
-  // Create array to hold image data with dimensions
-  let imageData = [];
-  let loadedCount = 0;
   
   // Create loading indicator
   const loadingIndicator = document.createElement('div');
   loadingIndicator.className = 'justified-gallery-loading';
   loadingIndicator.setAttribute('role', 'status');
   loadingIndicator.setAttribute('aria-live', 'polite');
-  loadingIndicator.innerHTML = '<span class="jg-spinner" aria-hidden="true"></span><span class="jg-text">Loading gallery…</span>';
+  loadingIndicator.innerHTML = '<span class="jg-spinner" aria-hidden="true"></span><span class="jg-text">Organizing gallery…</span>';
   justifiedGallery.appendChild(loadingIndicator);
   
-  // Function to organize images into rows once all are loaded
+  // Parse the original gallery items to extract pre-calculated dimensions
+  const originalItems = new DOMParser().parseFromString(originalHTML, 'text/html').querySelectorAll('li');
+  
+  // Create array to hold image data with dimensions from data attributes
+  let imageData = [];
+  
+  // Collect image data from data attributes
+  originalItems.forEach(item => {
+    const link = item.querySelector('a');
+    if (!link) return;
+    
+    // Extract dimensions from data attributes
+    const width = parseInt(link.getAttribute('data-width'), 10);
+    const height = parseInt(link.getAttribute('data-height'), 10);
+    const aspectRatio = parseFloat(link.getAttribute('data-aspect-ratio')) || (width / height);
+    
+    // Collect all data attributes to preserve them
+    const dataAttrs = {};
+    Array.from(link.attributes).forEach(attr => {
+      dataAttrs[attr.name] = attr.value;
+    });
+    
+    // Extract image URLs from data attributes
+    const src = link.getAttribute('data-src') || '';
+    const thumb = link.getAttribute('data-thumb') || src;
+    const srcset = link.getAttribute('data-srcset') || '';
+    const avifSrcset = link.getAttribute('data-avif-srcset') || '';
+    const alt = link.getAttribute('data-alt') || '';
+    
+    imageData.push({
+      src: src,
+      thumb: thumb,
+      srcset: srcset,
+      avifSrcset: avifSrcset,
+      width: width || 800, // fallback if not provided
+      height: height || 600, // fallback if not provided
+      aspectRatio: aspectRatio || (4/3), // fallback if not provided
+      alt: alt,
+      dataAttrs
+    });
+  });
+  
+  // Immediately organize images since we already have the dimensions
+  organizeImagesIntoRows();
+  
+  // Function to organize images into rows using pre-calculated dimensions
   function organizeImagesIntoRows() {
     // Remove loading indicator
     const loadingIndicator = justifiedGallery.querySelector('.justified-gallery-loading');
@@ -46,7 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
       
       let rowWidth = 0;
       for (let img of images) {
-        rowWidth += img.width * (targetRowHeight / img.height) + spacing;
+        // Use pre-calculated aspect ratio directly
+        rowWidth += img.aspectRatio * targetRowHeight + spacing;
       }
       rowWidth -= spacing; // Remove extra spacing
       
@@ -72,32 +117,67 @@ document.addEventListener('DOMContentLoaded', function() {
         link.className = 'lightbox-trigger';
         
         // Copy all data attributes from original link
-        for (let attr of imgData.linkAttrs) {
-          link.setAttribute(attr.name, attr.value);
+        for (const [key, value] of Object.entries(imgData.dataAttrs)) {
+          link.setAttribute(key, value);
         }
         
-        // Ensure required data attributes are explicitly set for lightbox functionality
-        if (imgData.fullSrc) {
-          link.setAttribute('data-src', imgData.fullSrc);
-        }
-        
-        // Make sure caption is set
-        if (imgData.caption) {
-          link.setAttribute('data-caption', imgData.caption);
-        }
-        
-        const img = document.createElement('img');
-        img.src = imgData.src;
-        img.alt = imgData.alt || '';
-        
-        // Set width based on aspect ratio and row height
-        const itemWidth = (imgData.width / imgData.height) * rowHeight;
+        // Set width based on pre-calculated aspect ratio and row height
+        const itemWidth = imgData.aspectRatio * rowHeight;
         item.style.width = `${itemWidth}px`;
         
-        link.appendChild(img);
+        // Generate image content
+        // Check if AVIF support is available
+        if (imgData.avifSrcset) {
+          // Create a picture element with AVIF and JPEG sources
+          const picture = document.createElement('picture');
+          
+          // AVIF source
+          const avifSource = document.createElement('source');
+          avifSource.setAttribute('type', 'image/avif');
+          avifSource.setAttribute('srcset', imgData.avifSrcset);
+          // Use the calculated width for sizes instead of the data attribute
+          avifSource.setAttribute('sizes', `${Math.round(itemWidth)}px`);
+          picture.appendChild(avifSource);
+          
+          // JPEG source
+          const jpegSource = document.createElement('source');
+          jpegSource.setAttribute('type', 'image/jpeg');
+          jpegSource.setAttribute('srcset', imgData.srcset);
+          // Use the calculated width for sizes instead of the data attribute
+          jpegSource.setAttribute('sizes', `${Math.round(itemWidth)}px`);
+          picture.appendChild(jpegSource);
+          
+          // Fallback img
+          const img = document.createElement('img');
+          img.src = imgData.thumb || imgData.src;
+          img.alt = imgData.alt || '';
+          img.width = imgData.width;
+          img.height = imgData.height;
+          img.setAttribute('loading', 'lazy');
+          
+          picture.appendChild(img);
+          link.appendChild(picture);
+        } else {
+          // Create a simple img element
+          const img = document.createElement('img');
+          img.src = imgData.thumb || imgData.src;
+          img.alt = imgData.alt || '';
+          
+          if (imgData.srcset) {
+            img.setAttribute('srcset', imgData.srcset);
+            // Use the calculated width for sizes instead of the data attribute
+            img.setAttribute('sizes', `${Math.round(itemWidth)}px`);
+          }
+          
+          img.width = imgData.width;
+          img.height = imgData.height;
+          img.setAttribute('loading', 'lazy');
+          
+          link.appendChild(img);
+        }
         
         // Add caption if available
-        const caption = imgData.caption;
+        const caption = imgData.dataAttrs['data-caption'];
         if (caption) {
           const captionEl = document.createElement('div');
           captionEl.className = 'justified-gallery-caption';
@@ -135,47 +215,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Load each image to get its dimensions
-  images.forEach(img => {
-    // Get original link and its data attributes
-    const originalLink = img.closest('a');
-    const linkAttrs = originalLink ? Array.from(originalLink.attributes).map(attr => {
-      return { name: attr.name, value: attr.value };
-    }) : [];
-    
-    // Create new image to get dimensions
-    const tempImg = new Image();
-    tempImg.onload = function() {
-      // Get the actual image URL for the lightbox (full size image)
-      const imageSrc = originalLink ? (originalLink.getAttribute('data-src') || img.src) : img.src;
-      
-      const data = {
-        src: img.src,
-        fullSrc: imageSrc, // The full size image for lightbox
-        width: tempImg.width,
-        height: tempImg.height,
-        alt: img.alt,
-        caption: originalLink ? originalLink.getAttribute('data-caption') : '',
-        linkAttrs: linkAttrs
-      };
-      imageData.push(data);
-      
-      loadedCount++;
-      if (loadedCount === images.length) {
-        organizeImagesIntoRows();
-      }
-    };
-    
-    tempImg.onerror = function() {
-      // In case image fails to load, still count it
-      loadedCount++;
-      if (loadedCount === images.length) {
-        organizeImagesIntoRows();
-      }
-    };
-    
-    tempImg.src = img.src;
-  });
+  // Since we already have the dimensions from data attributes,
+  // we can organize the gallery immediately without loading images
+  // This is the key change - we no longer wait for images to load
+  // to calculate dimensions
   
   // Handle window resize
   let resizeTimeout;
@@ -185,15 +228,18 @@ document.addEventListener('DOMContentLoaded', function() {
       // Recalculate container width
       const newContainerWidth = justifiedGallery.offsetWidth;
       if (containerWidth !== newContainerWidth) {
+        // Update the stored container width
+        containerWidth = newContainerWidth;
+        
         // Only reorganize if width changed
         justifiedGallery.innerHTML = '';
         // Add loading indicator during resize
-  const resizeIndicator = document.createElement('div');
-  resizeIndicator.className = 'justified-gallery-loading';
-  resizeIndicator.setAttribute('role', 'status');
-  resizeIndicator.setAttribute('aria-live', 'polite');
-  resizeIndicator.innerHTML = '<span class="jg-spinner" aria-hidden="true"></span><span class="jg-text">Adjusting layout…</span>';
-  justifiedGallery.appendChild(resizeIndicator);
+        const resizeIndicator = document.createElement('div');
+        resizeIndicator.className = 'justified-gallery-loading';
+        resizeIndicator.setAttribute('role', 'status');
+        resizeIndicator.setAttribute('aria-live', 'polite');
+        resizeIndicator.innerHTML = '<span class="jg-spinner" aria-hidden="true"></span><span class="jg-text">Adjusting layout…</span>';
+        justifiedGallery.appendChild(resizeIndicator);
         
         // Small delay to allow transition to show
         setTimeout(function() {
@@ -202,4 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 200);
   });
+  
+  // Mark the gallery as ready
+  justifiedGallery.setAttribute('data-ready', 'true');
 });

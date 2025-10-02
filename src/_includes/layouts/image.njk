@@ -18,7 +18,16 @@ layout: layouts/base.njk
 <section class="hero">
   <div class="hero-aspect">
     <div class="hero-track">
-      <div class="hero-slide active"><img src="{{ imgUrl }}" alt="{{ (img and (img.alt or img.caption)) or title or '' }}"></div>
+      <div class="hero-slide active">
+        <img 
+          src="{{ imgUrl }}" 
+          {% if img and img.responsive %}
+          srcset="{{ img.responsive.srcset }}" 
+          sizes="{{ img.responsive.sizes }}"
+          {% endif %}
+          alt="{{ (img and (img.alt or img.caption)) or title or '' }}"
+          loading="lazy">
+      </div>
     </div>
   </div>
   {% if img and img.caption %}

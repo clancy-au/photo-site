@@ -2,7 +2,18 @@
   <div class="hero-aspect">
     <div class="hero-track">
       {% for img in heroImages %}
-      <div class="hero-slide"><img src="/images/hero/{{ img }}" alt=""></div>
+      <div class="hero-slide">
+        <img 
+          src="/images/hero/{{ img }}" 
+          srcset="/images/hero/{{ img }} 2000w, 
+                 /images/hero/responsive/{{ img | replace('.jpg', '') }}-1600w.jpg 1600w,
+                 /images/hero/responsive/{{ img | replace('.jpg', '') }}-1200w.jpg 1200w,
+                 /images/hero/responsive/{{ img | replace('.jpg', '') }}-800w.jpg 800w,
+                 /images/hero/responsive/{{ img | replace('.jpg', '') }}-400w.jpg 400w"
+          sizes="100vw"
+          loading="lazy" 
+          alt="">
+      </div>
       {% endfor %}
     </div>
   </div>

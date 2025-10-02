@@ -74,7 +74,11 @@
   <div class="lightbox-backdrop"></div>
   <div class="lightbox-content">
     <button class="lightbox-close" aria-label="Close lightbox">&times;</button>
-    <img class="lightbox-image" src="" alt="">
+    <picture class="lightbox-picture">
+      <!-- AVIF source will be injected here by JS -->
+      <!-- JPEG source will be injected here by JS -->
+      <img class="lightbox-image" src="" alt="" loading="lazy">
+    </picture>
     <div class="lightbox-info">
       <div class="lightbox-caption" id="lightbox-caption"></div>
       <div class="lightbox-exif"></div>
@@ -87,6 +91,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const lightbox = document.getElementById('lightbox');
+  const lightboxPicture = lightbox.querySelector('.lightbox-picture');
   const lightboxImage = lightbox.querySelector('.lightbox-image');
   const lightboxCaption = lightbox.querySelector('.lightbox-caption');
   const lightboxExif = lightbox.querySelector('.lightbox-exif');
@@ -112,6 +117,10 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Extract image data
       const src = trigger.getAttribute('data-src') || trigger.dataset.src;
+      const srcset = trigger.getAttribute('data-srcset') || trigger.dataset.srcset;
+      const avifSrcset = trigger.getAttribute('data-avif-srcset') || trigger.dataset.avifSrcset;
+      const avifUrl = trigger.getAttribute('data-avif-url') || trigger.dataset.avifUrl;
+      const sizes = "(min-width: 1200px) 80vw, 100vw"; // Fixed sizes for lightbox
       const caption = trigger.getAttribute('data-caption') || trigger.dataset.caption;
       const camera = trigger.dataset.camera;
       const lens = trigger.dataset.lens;
@@ -122,8 +131,57 @@ document.addEventListener('DOMContentLoaded', function() {
       const dateTime = trigger.dataset.dateTime;
       
       if (src) {
+        // Clear previous sources first
+        while (lightboxPicture.firstChild !== lightboxImage) {
+          if (lightboxPicture.firstChild) {
+            lightboxPicture.removeChild(lightboxPicture.firstChild);
+          }
+        }
+        
+        // Set the fallback image properties
         lightboxImage.src = src;
         lightboxImage.alt = caption || '';
+        
+        // Create and add sources to the picture element
+        if (avifSrcset) {
+          // Add AVIF source
+          const avifSource = document.createElement('source');
+          avifSource.setAttribute('type', 'image/avif');
+          avifSource.setAttribute('srcset', avifSrcset);
+          avifSource.setAttribute('sizes', sizes);
+          lightboxPicture.insertBefore(avifSource, lightboxImage);
+        }
+        
+        // Add JPEG source
+        if (srcset) {
+          const jpegSource = document.createElement('source');
+          jpegSource.setAttribute('type', 'image/jpeg');
+          jpegSource.setAttribute('srcset', srcset);
+          jpegSource.setAttribute('sizes', sizes);
+          lightboxPicture.insertBefore(jpegSource, lightboxImage);
+        } else {
+          // Try to generate srcset from the src pattern
+          try {
+            const baseUrl = src.replace(/(\.[^.]+)$/, '');
+            const ext = src.match(/(\.[^.]+)$/)[1];
+            const responsiveDir = src.substring(0, src.lastIndexOf('/')) + '/responsive';
+            const generatedSrcset = `
+              ${src} 2000w, 
+              ${responsiveDir}/${baseUrl.split('/').pop()}-1600w${ext} 1600w,
+              ${responsiveDir}/${baseUrl.split('/').pop()}-1200w${ext} 1200w,
+              ${responsiveDir}/${baseUrl.split('/').pop()}-800w${ext} 800w
+            `.trim();
+            
+            const jpegSource = document.createElement('source');
+            jpegSource.setAttribute('type', 'image/jpeg');
+            jpegSource.setAttribute('srcset', generatedSrcset);
+            jpegSource.setAttribute('sizes', sizes);
+            lightboxPicture.insertBefore(jpegSource, lightboxImage);
+          } catch (e) {
+            // If srcset generation fails, fallback to single image
+            // No source element needed
+          }
+        }
         lightboxCaption.textContent = caption || '';
         
         // Build EXIF info
